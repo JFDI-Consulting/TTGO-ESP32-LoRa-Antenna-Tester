@@ -1,0 +1,31 @@
+{
+    "name": "Debug", 
+    "repository": {
+        "url": "https://github.com/AMPWorks/ArduinoLibs.git", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "atmelavr"
+    ], 
+    "frameworks": [
+        "arduino"
+    ], 
+    "version": "50b8c08258", 
+    "export": {
+        "include": "Debug"
+    }, 
+    "authors": [
+        {
+            "url": null, 
+            "maintainer": false, 
+            "email": "amp@cs.stanford.edu", 
+            "name": "Adam Phelps"
+        }
+    ], 
+    "keywords": [
+        "debug", 
+        "debugging"
+    ], 
+    "id": 119, 
+    "description": "Macro-based debugging print statements"
+}

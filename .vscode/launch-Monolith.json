@@ -1,0 +1,29 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+
+// PIO Unified Debugger
+//
+// Documentation: http://docs.platformio.org/page/plus/debugging.html
+// Configuration: http://docs.platformio.org/page/projectconf/section_env_debug.html
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PlatformIO Debugger",
+            "executable": "c:/Users/jon/OneDrive - JFDI Consulting Ltd/Southern Water/Base Station/ESP32LoRaServerRelay/.pioenvs/heltec_wifi_lora_32/firmware.elf",
+            "toolchainBinDir": "C:/Users/jon/.platformio/packages/toolchain-xtensa32/bin",
+            "preLaunchTask": "PlatformIO: Pre-Debug",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PlatformIO Debugger (Skip Pre-Debug)",
+            "executable": "c:/Users/jon/OneDrive - JFDI Consulting Ltd/Southern Water/Base Station/ESP32LoRaServerRelay/.pioenvs/heltec_wifi_lora_32/firmware.elf",
+            "toolchainBinDir": "C:/Users/jon/.platformio/packages/toolchain-xtensa32/bin",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}

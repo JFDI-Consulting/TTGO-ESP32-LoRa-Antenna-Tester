@@ -1,0 +1,44 @@
+{
+    "name": "RadioHead", 
+    "platforms": [
+        "atmelavr", 
+        "atmelsam", 
+        "espressif8266", 
+        "intel_arc32", 
+        "microchippic32", 
+        "nordicnrf51", 
+        "teensy", 
+        "timsp430", 
+        "titiva"
+    ], 
+    "downloadUrl": "http://www.airspayce.com/mikem/arduino/RadioHead/RadioHead-1.84.zip", 
+    "frameworks": [
+        "energia", 
+        "arduino"
+    ], 
+    "version": "1.84", 
+    "export": {
+        "exclude": [
+            "RadioHead/doc", 
+            "RadioHead/project.cfg", 
+            "RadioHead/STM32ArduinoCompat", 
+            "RadioHead/tools"
+        ], 
+        "include": "RadioHead"
+    }, 
+    "authors": [
+        {
+            "maintainer": false, 
+            "name": "Mike McCauley", 
+            "url": "http://www.airspayce.com/mikem/arduino/RadioHead/index.html", 
+            "email": "mikem@airspayce.com"
+        }
+    ], 
+    "keywords": [
+        "wireless", 
+        "rf", 
+        "radio"
+    ], 
+    "id": 124, 
+    "description": "The RadioHead Packet Radio library which provides a complete object-oriented library for sending and receiving packetized messages via RF22/24/26/27/69, Si4460/4461/4463/4464, nRF24/nRF905, SX1276/77/78, RFM95/96/97/98 and etc."
+}
