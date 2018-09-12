@@ -45,7 +45,7 @@ RH_RF95 radio(RADIO_CS, RADIO_INT);
 #endif
 ClickButton userButton(USERBUTTON, LOW, CLICKBTN_PULLUP);
 elapsedMillis ledTimer;
-elapsedMillis timeout;
+// elapsedMillis timeout;
 
 const char firmwareTitle[] PROGMEM = {FIRMWARETITLE};
 
@@ -57,6 +57,7 @@ int16_t lastRSSI, maxRSSI = INITMAXRSSI, minRSSI, meanRSSI;
 int16_t lastSNR, maxSNR, minSNR = INITMINSNR, meanSNR;
 int16_t lastFErr, maxFErr, minFErr = INITMINFERR, meanFErr;
 uint8_t msgCount;
+uint8_t ackCount;
 uint32_t ledTimeout;
 String mode = "RX";
 
@@ -95,26 +96,15 @@ void loop()
     receiveMessage();
     timeoutLED();
 
-    if (timeout > 5000) {
-        timeout = 0;
-        msgCount = 0;
-        minFErr = INITMINFERR;
-        maxFErr = 0;
-        meanFErr = 0;
-        minRSSI = 0;
-        maxRSSI = INITMAXRSSI;
-        meanRSSI = 0;
-        minSNR = INITMINSNR;
-        maxSNR = 0;
-        meanSNR = 0;
-    }
+    // if (timeout > 5000) {
+    // }
 }
 
 
 void receiveMessage() {
     if (manager.available())
     {
-        timeout = 0;
+        // timeout = 0;
         mode = "RX";
 
         DEBUG5_PRINT("Message waiting... ");
@@ -127,7 +117,7 @@ void receiveMessage() {
         if (manager.recvfromAck(buf, &len, &from, &to, &msgId)) {
             DEBUG5_PRINTLN("Message complete.");
 
-            msgCount++;
+            ackCount++;
             updateStats();
             DEBUG5_VALUE("msg from ", from);
             DEBUG5_VALUE(" to ", to);
@@ -144,7 +134,7 @@ void receiveMessage() {
 
 void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId, int16_t rssi, bool nearby)
 {
-    flashLEDOnce(250);
+    flashLEDOnce(100);
 
     char msg[len+1] = {0};
     memcpy(&msg, buf, len);
@@ -159,17 +149,18 @@ void sendTestMessages() {
     mode = "TX";
 
     for (uint8_t i = 1; i <= 10; i++) {
-        flashLEDOnce(250);
+        flashLEDOnce(100);
 
-        String msg = "Message " + String(i);
+        msgCount++;
+        String msg = "Message " + String(msgCount);
         uint8_t buf[msg.length()];
         memcpy(&buf, msg.c_str(), sizeof(buf));
         DEBUG5_VALUE("Sending '", msg);
         DEBUG5_PRINT("'... ");
         if (manager.sendtoWait(buf, sizeof(buf), 7)) {
-            msgCount++;
+            ackCount++;
             updateStats();
-            timeout = 0;
+            // timeout = 0;
             DEBUG5_PRINTLN("Ack'd.");
         } else {
             DEBUG5_PRINTLN("not Ack'd.");
@@ -207,7 +198,7 @@ void updateDisplay(String msg) {
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
-    display.drawString(0, 0, mode + ": " + msg + " (" + String(msgCount) + " ok)");
+    display.drawString(0, 0, mode + ": " + msg + " (" + String(ackCount) + " ok)");
     display.drawString(0, 12, "Last rssi " + String(lastRSSI) + " snr " + String(lastSNR) + " ferr " + String(lastFErr));
     display.drawString(0, 24, "Max rssi " + String(maxRSSI) + " snr " + String(maxSNR) + " ferr " + String(maxFErr));
     display.drawString(0, 36, "Min rssi " + String(minRSSI) + " snr " + String(minSNR) + " ferr " + String(minFErr));
@@ -226,7 +217,26 @@ void setPins() {
 
 void handleButton() {
     userButton.Update();
-    if (userButton.clicks == 1) {
+
+    if (userButton.clicks == -1) {
+        DEBUG5_PRINTLN("LONG PRESS");
+        // timeout = 0;
+        msgCount = 0;
+        ackCount = 0;
+        minFErr = INITMINFERR;
+        maxFErr = 0;
+        meanFErr = 0;
+        minRSSI = 0;
+        maxRSSI = INITMAXRSSI;
+        meanRSSI = 0;
+        minSNR = INITMINSNR;
+        maxSNR = 0;
+        meanSNR = 0;
+        lastRSSI = 0;
+        lastSNR = 0;
+        lastFErr = 0;
+        updateDisplay("WAITING");
+    } else if (userButton.clicks == 1) {
         DEBUG5_PRINTLN("CLICK");
         updateDisplay("Transmitting...");
         sendTestMessages();
