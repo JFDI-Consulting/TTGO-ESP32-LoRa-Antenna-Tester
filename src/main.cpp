@@ -32,7 +32,6 @@ RH_RF95 radio(RADIO_CS, RADIO_INT);
 #ifdef USEENCRYPTION
     Speck cipher;
     RHEncryptedDriver driver(radio, cipher);
-    // Class to manage message delivery and receipt, using the radio declared above
     RHReliableDatagram manager(driver, DEFAULTSERVERADDRESS);
 #else
     RHReliableDatagram manager(radio, config.address);
@@ -45,7 +44,6 @@ RH_RF95 radio(RADIO_CS, RADIO_INT);
 #endif
 ClickButton userButton(USERBUTTON, LOW, CLICKBTN_PULLUP);
 elapsedMillis ledTimer;
-// elapsedMillis timeout;
 
 const char firmwareTitle[] PROGMEM = {FIRMWARETITLE};
 
@@ -53,11 +51,12 @@ const char firmwareTitle[] PROGMEM = {FIRMWARETITLE};
 #define INITMINSNR 9999
 #define INITMINFERR 9999
 
-int16_t lastRSSI, maxRSSI = INITMAXRSSI, minRSSI, meanRSSI;
-int16_t lastSNR, maxSNR, minSNR = INITMINSNR, meanSNR;
-int16_t lastFErr, maxFErr, minFErr = INITMINFERR, meanFErr;
+int16_t maxRSSI = INITMAXRSSI, minRSSI, meanRSSI;
+int16_t maxSNR, minSNR = INITMINSNR, meanSNR;
+int16_t maxFErr, minFErr = INITMINFERR, meanFErr;
 uint8_t msgCount;
 uint8_t ackCount;
+uint32_t txTime;
 uint32_t ledTimeout;
 String mode = "RX";
 
@@ -84,7 +83,7 @@ void setup()
     initRadio();
     display.init();
     display.displayOn();
-    displayConnecting("Waiting...");
+    displayWait("Waiting...");
 }
 
 
@@ -95,16 +94,12 @@ void loop()
 
     receiveMessage();
     timeoutLED();
-
-    // if (timeout > 5000) {
-    // }
 }
 
 
 void receiveMessage() {
     if (manager.available())
     {
-        // timeout = 0;
         mode = "RX";
 
         DEBUG5_PRINT("Message waiting... ");
@@ -121,10 +116,9 @@ void receiveMessage() {
             updateStats();
             DEBUG5_VALUE("msg from ", from);
             DEBUG5_VALUE(" to ", to);
-            DEBUG5_VALUE(" | bytes: ", len);
-            DEBUG5_VALUELN(" | rssi: ", lastRSSI);
+            DEBUG5_VALUELN(" | bytes: ", len);
 
-            handleMessage(buf, len, from, msgId, lastRSSI, false);
+            handleMessage(buf, len, from, msgId);
         } else {
             DEBUG5_PRINTLN("failed.");
         }
@@ -132,7 +126,7 @@ void receiveMessage() {
 }
 
 
-void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId, int16_t rssi, bool nearby)
+void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId)
 {
     flashLEDOnce(100);
 
@@ -148,9 +142,11 @@ void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId, i
 void sendTestMessages() {
     mode = "TX";
 
+
     for (uint8_t i = 1; i <= 10; i++) {
         flashLEDOnce(100);
 
+        uint32_t thisTime = millis();
         msgCount++;
         String msg = "Message " + String(msgCount);
         uint8_t buf[msg.length()];
@@ -160,11 +156,11 @@ void sendTestMessages() {
         if (manager.sendtoWait(buf, sizeof(buf), 7)) {
             ackCount++;
             updateStats();
-            // timeout = 0;
             DEBUG5_PRINTLN("Ack'd.");
         } else {
             DEBUG5_PRINTLN("not Ack'd.");
         }
+        txTime += (millis() - thisTime);
         updateDisplay(msg);
     }
 }
@@ -187,10 +183,6 @@ void updateStats() {
     minFErr = std::min(ferr, minFErr);
     maxFErr = std::max(ferr, maxFErr);
     meanFErr = (meanFErr + ferr) / 2;
-
-    lastRSSI = rssi;
-    lastSNR = snr;
-    lastFErr = ferr;
 }
 
 
@@ -199,7 +191,7 @@ void updateDisplay(String msg) {
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.drawString(0, 0, mode + ": " + msg + " (" + String(ackCount) + " ok)");
-    display.drawString(0, 12, "Last rssi " + String(lastRSSI) + " snr " + String(lastSNR) + " ferr " + String(lastFErr));
+    display.drawString(0, 12, "TX time (s): " + (mode == "TX" ? String((float)txTime / 1000) : "N/A"));
     display.drawString(0, 24, "Max rssi " + String(maxRSSI) + " snr " + String(maxSNR) + " ferr " + String(maxFErr));
     display.drawString(0, 36, "Min rssi " + String(minRSSI) + " snr " + String(minSNR) + " ferr " + String(minFErr));
     display.drawString(0, 48, "Avg rssi " + String(meanRSSI) + " snr " + String(meanSNR) + " ferr " + String(meanFErr));
@@ -220,7 +212,6 @@ void handleButton() {
 
     if (userButton.clicks == -1) {
         DEBUG5_PRINTLN("LONG PRESS");
-        // timeout = 0;
         msgCount = 0;
         ackCount = 0;
         minFErr = INITMINFERR;
@@ -232,9 +223,7 @@ void handleButton() {
         minSNR = INITMINSNR;
         maxSNR = 0;
         meanSNR = 0;
-        lastRSSI = 0;
-        lastSNR = 0;
-        lastFErr = 0;
+        txTime = 0;
         updateDisplay("WAITING");
     } else if (userButton.clicks == 1) {
         DEBUG5_PRINTLN("CLICK");
@@ -328,7 +317,7 @@ void displayTitle() {
 }
 
 
-void displayConnecting(String msg) {
+void displayWait(String msg) {
     display.clear();
     display.setFont(Lato_Regular_12);
     displayTitle();

@@ -19,7 +19,7 @@
 #define SCL 15
 
 #define DEFAULTSERVERADDRESS 7
-#define RADIO_FREQ 433.0
+#define RADIO_FREQ 433.5    // bang in the middle of the 433MHz band
 #define CHANNELBANDWIDTH 125.0
 #define MODEMCONFIG RH_RF95::Bw125Cr45Sf128
 #define TXPOWER 23 // 13 for a reasonable TX power, 23 to blast the hell out of everything
@@ -31,7 +31,7 @@
 
 
 void receiveMessage();
-void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId, int16_t rssi, bool nearby);
+void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId);
 void handleButton();
 void flashLEDOnce(uint32_t duration);
 void switchLED(uint8_t state);
@@ -44,7 +44,7 @@ void setPins();
 void resetDisplay();
 void displayTitle();
 void displayLogo();
-void displayConnecting(String msg);
+void displayWait(String msg);
 void timeoutLED();
 void sendTestMessages();
 void updateDisplay(String msg);
