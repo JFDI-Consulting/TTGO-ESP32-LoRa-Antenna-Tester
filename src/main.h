@@ -21,7 +21,8 @@
 #define DEFAULTSERVERADDRESS 7
 #define RADIO_FREQ 433.5    // bang in the middle of the 433MHz band
 #define CHANNELBANDWIDTH 125.0
-#define MODEMCONFIG RH_RF95::Bw125Cr45Sf128
+#define MODEMCONFIGFAST RH_RF95::Bw125Cr45Sf128
+#define MODEMCONFIGSLOW RH_RF95::Bw125Cr48Sf4096
 #define TXPOWER 23 // 13 for a reasonable TX power, 23 to blast the hell out of everything
 #define CADTIMEOUT 1000
 #define LED 2

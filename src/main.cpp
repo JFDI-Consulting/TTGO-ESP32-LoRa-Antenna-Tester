@@ -59,7 +59,7 @@ uint8_t ackCount;
 uint32_t txTime;
 uint32_t ledTimeout;
 String mode = "RX";
-
+bool fast = true;
 
 void setup()
 {
@@ -142,7 +142,6 @@ void handleMessage(uint8_t *buf, uint8_t len, uint8_t from, uint8_t messageId)
 void sendTestMessages() {
     mode = "TX";
 
-
     for (uint8_t i = 1; i <= 10; i++) {
         flashLEDOnce(100);
 
@@ -195,6 +194,10 @@ void updateDisplay(String msg) {
     display.drawString(0, 24, "Max rssi " + String(maxRSSI) + " snr " + String(maxSNR) + " ferr " + String(maxFErr));
     display.drawString(0, 36, "Min rssi " + String(minRSSI) + " snr " + String(minSNR) + " ferr " + String(minFErr));
     display.drawString(0, 48, "Avg rssi " + String(meanRSSI) + " snr " + String(meanSNR) + " ferr " + String(meanFErr));
+    
+    display.setTextAlignment(TEXT_ALIGN_RIGHT);
+    display.drawString(127, 0, fast ? "F":"S");
+
     display.display();
 }
 
@@ -225,6 +228,11 @@ void handleButton() {
         meanSNR = 0;
         txTime = 0;
         updateDisplay("WAITING");
+    } else if (userButton.clicks == 2) {    // double-click
+        DEBUG5_PRINTLN("DOUBLE-CLICK");
+        fast = !fast;
+        updateDisplay(fast ? "Fast":"Slow");
+        initRadio();
     } else if (userButton.clicks == 1) {
         DEBUG5_PRINTLN("CLICK");
         updateDisplay("Transmitting...");
@@ -278,8 +286,11 @@ void initRadio() {
     
     // Set transmitter power using PA_BOOST.
     radio.setTxPower(TXPOWER, false);
+    
     // Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range.
-    radio.setModemConfig(MODEMCONFIG);
+    radio.setModemConfig(fast ? MODEMCONFIGFAST:MODEMCONFIGSLOW);
+    manager.setTimeout(fast ? 200 : 1000);
+
     // wait 1s until Channel Activity Detection shows no activity on the channel before transmitting
     radio.setCADTimeout(CADTIMEOUT);
 
